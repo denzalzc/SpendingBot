@@ -1,0 +1,55 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/enter_style.css' %}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="welcome-section">
+            <h1>Добро пожаловать!</h1>
+        </div>
+
+        <div class="login-section">
+            <h2>Вход в Spends</h2>
+
+            <div id="message" class="message"></div>
+            <form id="loginForm" method="get" action="{% url 'spends' %}">
+                {% csrf_token %}    
+                <div class="form-group">
+                    <label for="username">Telegram ID</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" name="tgid" class="form-control"
+                            placeholder="/id for get it" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Spend Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" name="tgpass" id="password" class="form-control" placeholder="/password for get it" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" id="loginBtn" class="btn">
+                        <span id="btnText">Войти</span>
+                        <div id="loader" class="l   oader"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

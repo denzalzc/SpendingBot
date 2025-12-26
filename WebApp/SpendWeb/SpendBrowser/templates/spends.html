@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статьи расходов</title>
+    <link rel="stylesheet" href="{% static 'css/spends.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-chart-pie"></i> Учет расходов</h1>
+            <div class="header-info">
+                <div class="total-amount">
+                    <span>Общая сумма:</span>
+                    <strong id="totalAmount">{{ total_amount }}</strong> ₽
+                </div>
+                <!-- <button class="btn-add" id="addSpendBtn">
+                    <i class="fas fa-plus"></i> Добавить расход
+                </button> -->
+            </div>
+        </header>
+
+        <!-- Фильтры и сортировка -->
+        <div class="controls">
+            <div class="filter-group">
+                <label for="categoryFilter"><i class="fas fa-filter"></i> Категория:</label>
+                <select id="categoryFilter" class="filter-select">
+                    <option value="all">Все категории</option>
+                    {% for c in categories %}
+                    <option value="{{c}}">{{c}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="sortSelect"><i class="fas fa-sort"></i> Сортировка:</label>
+                <select id="sortSelect" class="filter-select">
+                    <option value="newest">Сначала новые</option>
+                    <option value="oldest">Сначала старые</option>
+                    <option value="amount_high">Сумма (по убыванию)</option>
+                    <option value="amount_low">Сумма (по возрастанию)</option>
+                </select>
+            </div>
+
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Поиск по описанию...">
+            </div>
+        </div>
+
+        <!-- Таблица расходов -->
+        <div class="table-container">
+            <table class="spends-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Категория</th>
+                        <th>Сумма</th>
+                        <th>Дата</th>
+                        <th>Описание</th>
+                        <!-- <th>Действия</th> -->
+                    </tr>
+                </thead>
+                <tbody id="spendsTableBody">
+                    {% for spend in spends %}
+                    <tr data-id="{{ spend.id }}" data-category="{{ spend.category }}"
+                        data-description="{{ spend.description|default:'' }}">
+                        <td class="id-cell">{{ spend.id }}</td>
+                        <td class="category-cell">
+                            <span class="category-badge category-{{ spend.category|slugify }}">
+                                {{ spend.category }}
+                            </span>
+                        </td>
+                        <td class="amount-cell">{{ spend.amount }} ₽</td>
+                        <td class="date-cell">{{ spend.created_at|date:"d.m.Y H:i" }}</td>
+                        <td class="description-cell">
+                            <div class="description-wrapper">
+                                <div class="description-preview">
+                                    {% if spend.description %}
+                                    {{ spend.description|truncatechars:50 }}
+                                    {% if spend.description|length > 50 %}
+                                    <span class="read-more">... <i class="fas fa-chevron-down"></i></span>
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="no-description">—</span>
+                                    {% endif %}
+                                </div>
+                                {% if spend.description %}
+                                <div class="description-full" title="{{ spend.description }}">
+                                    {{ spend.description }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <!-- <td class="actions-cell">
+                            <button class="btn-action btn-edit" title="Редактировать">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-delete" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td> -->
+                    </tr>
+                    {% empty %}
+                    <tr class="empty-row">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fas fa-wallet"></i>
+                                <p>Нет данных о расходах</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Пагинация -->
+        {% if spends.has_other_pages %}
+        <div class="pagination">
+            {% if spends.has_previous %}
+            <a href="?page=1" class="page-link"><i class="fas fa-angle-double-left"></i></a>
+            <a href="?page={{ spends.previous_page_number }}" class="page-link"><i class="fas fa-angle-left"></i></a>
+            {% endif %}
+
+            <span class="current-page">Страница {{ spends.number }} из {{ spends.paginator.num_pages }}</span>
+
+            {% if spends.has_next %}
+            <a href="?page={{ spends.next_page_number }}" class="page-link"><i class="fas fa-angle-right"></i></a>
+            <a href="?page={{ spends.paginator.num_pages }}" class="page-link"><i
+                    class="fas fa-angle-double-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Карточный вид для мобильных устройств -->
+        <div class="cards-container" id="cardsContainer">
+            {% for spend in spends %}
+            <div class="expense-card" data-id="{{ spend.id }}" data-category="{{ spend.category }}">
+                <div class="card-header">
+                    <span class="category-badge category-{{ spend.category|slugify }}">
+                        {{ spend.category }}
+                    </span>
+                    <span class="card-date">{{ spend.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-amount">{{ spend.amount }} ₽</div>
+                    <div class="card-description">
+                        {% if spend.description %}
+                        <div class="description-preview">
+                            {{ spend.description|truncatechars:100 }}
+                            {% if spend.description|length > 100 %}
+                            <span class="read-more">... <i class="fas fa-chevron-down"></i></span>
+                            {% endif %}
+                        </div>
+                        <div class="description-full">
+                            {{ spend.description }}
+                        </div>
+                        {% else %}
+                        <span class="no-description">Нет описания</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-action btn-edit" title="Редактировать">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action btn-delete" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-section">
+            <h2><i class="fas fa-chart-bar"></i> Статистика по категориям</h2>
+            <div class="stats-container" id="statsContainer">
+                <!-- Заполняется через JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления/редактирования -->
+    <div class="modal" id="spendModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Добавить расход</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="spendForm">
+                    <input type="hidden" id="spendId">
+                    <div class="form-group">
+                        <label for="category"><i class="fas fa-tag"></i> Категория</label>
+                        <select id="category" class="form-control" required>
+                            <option value="">Выберите категорию</option>
+                            {% for c in categories %}
+                            <option value="{{c}}">{{c}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount"><i class="fas fa-ruble-sign"></i> Сумма (₽)</label>
+                        <input type="number" id="amount" class="form-control" min="1" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description"><i class="fas fa-align-left"></i> Описание</label>
+                        <textarea id="description" class="form-control" rows="4"
+                            placeholder="Введите описание расхода (необязательно)"></textarea>
+                        <div class="char-counter">
+                            <span id="charCount">0</span>/500 символов
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancelBtn">Отмена</button>
+                        <button type="submit" class="btn-primary">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для полного описания -->
+    <div class="modal" id="descriptionModal">
+        <div class="modal-content modal-description">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-alt"></i> Полное описание</h3>
+                <button class="modal-close" id="descriptionModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="description-meta">
+                    <span class="description-category" id="descCategory"></span>
+                    <span class="description-date" id="descDate"></span>
+                    <span class="description-amount" id="descAmount"></span>
+                </div>
+                <div class="description-content" id="descContent">
+                    <!-- Содержимое описания будет здесь -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="closeDescBtn">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/spends.js' %}"></script>
+</body>
+
+</html>
