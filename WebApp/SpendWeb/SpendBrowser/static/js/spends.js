@@ -252,13 +252,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Управление модальными окнами
-    addSpendBtn.addEventListener('click', () => {
-        document.getElementById('modalTitle').textContent = 'Добавить расход';
-        spendForm.reset();
-        document.getElementById('spendId').value = '';
-        charCounter.textContent = '0';
-        spendModal.style.display = 'flex';
-    });
+    // addSpendBtn.addEventListener('click', () => {
+    //     document.getElementById('modalTitle').textContent = 'Добавить расход';
+    //     spendForm.reset();
+    //     document.getElementById('spendId').value = '';
+    //     charCounter.textContent = '0';
+    //     spendModal.style.display = 'flex';
+    // });
 
     modalClose.addEventListener('click', () => {
         spendModal.style.display = 'none';
