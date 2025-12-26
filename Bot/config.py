@@ -11,6 +11,8 @@ SessionLocal = sessionmaker(autocommit=0, autoflush=0, bind=engine)
 
 Base = declarative_base()
 
+WEB_URL = 'http://80.93.61.179/'
+
 def get_db():
     db = SessionLocal()
     try:

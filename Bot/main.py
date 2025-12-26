@@ -1,7 +1,7 @@
 from repository import UserRepository, ExpenseRepository
 from models import ExpenseCategory
 from telebot.types import Message
-from config import SessionLocal
+from config import SessionLocal, WEB_URL
 from contrib import parse_user_message_addexpense, parse_user_message_showexpense, parse_user_message_deleteexpense, parse_user_message_totalexpense, parse_user_message_updatebudget
 from database import init_db
 from graphic import create_diag
@@ -50,7 +50,7 @@ def web_command(message: Message):
 
     send_to_src(
         message,
-        f"Your spends is avaiable at\nhttp://127.0.0.1:8000/spends/?tgid={user.telegram_id}&tgpass={user.spend_password}"
+        f"Your spends is avaiable at\n{WEB_URL}spends/?tgid={user.telegram_id}&tgpass={user.spend_password}"
     )
 
 1002609684
