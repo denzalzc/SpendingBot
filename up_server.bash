@@ -38,3 +38,7 @@ systemctl enable spendbot
 
 systemctl start spendweb
 systemctl enable spendweb
+
+# checks
+systemctl status spendweb
+systemctl status spendbot
