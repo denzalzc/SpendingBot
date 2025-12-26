@@ -1,0 +1,11 @@
+[Unit]
+Description=Telegram Bot Process
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/home/spendingBot/Bot
+ExecStart=/home/spendingBot/venv/bin/python3 /home/spendingBot/Bot/main.py
+
+[Install]
+WantedBy=multi-user.target
