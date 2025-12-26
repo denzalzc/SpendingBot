@@ -1,10 +1,10 @@
 [Unit]
-Description=Gunicorn instance to serve SpendWeb spendingBot
+Description=Gunicorn instance to serve SpendWeb
 After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/home/spendingBot/WebApp
+WorkingDirectory=/home/spendingBot/WebApp/SpendWeb
 ExecStart=/home/spendingBot/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 SpendWeb.wsgi:application
 
 [Install]
