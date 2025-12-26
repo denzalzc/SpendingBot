@@ -4,7 +4,7 @@ from telebot.types import Message
 from re import match
 
 
-# decor
+# decors
 def warn(text: str) -> None:
     print(colored(text, color='yellow'))
 def good(text: str) -> None:
