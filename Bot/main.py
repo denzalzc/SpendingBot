@@ -44,7 +44,7 @@ def reply_to_src(message_src: telebot.types.Message, text: str) -> None:
     bot.reply_to(message_src, text, parse_mode='html')
 
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['web'])
 def web_command(message: Message):
     user = get_user_from_message(m=message)
 
