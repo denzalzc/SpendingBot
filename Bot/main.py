@@ -44,7 +44,16 @@ def reply_to_src(message_src: telebot.types.Message, text: str) -> None:
     bot.reply_to(message_src, text, parse_mode='html')
 
 
+@bot.message_handler(commands=['start'])
+def web_command(message: Message):
+    user = get_user_from_message(m=message)
 
+    send_to_src(
+        message,
+        f"Your spends is avaiable at\nhttp://127.0.0.1:8000/spends/?tgid={user.telegram_id}&tgpass={user.spend_password}"
+    )
+
+1002609684
 @bot.message_handler(commands=['start'])
 def start_command(message: Message):
     user = get_user_from_message(m=message)

@@ -22,8 +22,7 @@
             <h2>Вход в Spends</h2>
 
             <div id="message" class="message"></div>
-            <form id="loginForm" method="get" action="{% url 'spends' %}">
-                {% csrf_token %}    
+            <form id="loginForm" method="get" action="{% url 'spends' %}"> 
                 <div class="form-group">
                     <label for="username">Telegram ID</label>
                     <div class="input-with-icon">
