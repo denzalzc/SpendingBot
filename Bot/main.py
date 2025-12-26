@@ -32,7 +32,7 @@ def get_user_tgid(message: Message):
 
 def get_api_key() -> str:
     with open('apikey.txt', 'r') as file:
-        return str(file.read())
+        return str(file.read()).strip()
     
 bot = telebot.TeleBot(get_api_key())
 print('Bot is up.')
