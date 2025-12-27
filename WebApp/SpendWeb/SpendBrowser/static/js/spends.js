@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Очистка контейнера
-        statsContainer.innerHTML = '';
+        // statsContainer.innerHTML = '';
 
         // Добавление карточек статистики
         Object.entries(categoryTotals).forEach(([category, total]) => {
@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Инициализация
     updateTotalAmount();
-    generateStats();
+    // generateStats();
 
     // Адаптивное переключение между таблицей и карточками
     function checkViewMode() {

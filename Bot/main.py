@@ -62,7 +62,7 @@ def start_command(message: Message):
     send_to_src(message, f"Avaiable categories:\n{'\n'.join([c.value for c in ExpenseCategory])}")
 
 @bot.message_handler(commands=['add'])
-def add_command(message: str):
+def add_command(message: Message):
     
     user_data = parse_user_message_addexpense(message)
     user = get_user_from_message(m=message)
@@ -74,13 +74,15 @@ def add_command(message: str):
         send_to_src(message, f'Category {user_data['category']} not exists')
         return
 
-    ExpenseRepository.add_expense(
+
+    expense = ExpenseRepository.add_expense(
         db=db,
         telegram_id=user.telegram_id,
         amount=user_data['amount'],
-        category=user_data['category']
+        category=user_data['category'],
+        description=user_data['desc']
     )
-    send_to_src(message, 'Added.')
+    send_to_src(message, f'Added. ID:{expense.id}')
     
 
 @bot.message_handler(commands=['password'])
@@ -96,7 +98,7 @@ def getid_command(message: Message):
     send_to_src(message, f"Your telegram-id: {user.telegram_id}")
         
 @bot.message_handler(commands=['show'])
-def show_command(message: str):
+def show_command(message: Message):
     user_data = parse_user_message_showexpense(message)
     user = get_user_from_message(m=message)
 
@@ -150,7 +152,7 @@ def show_command(message: str):
         return
     
 @bot.message_handler(commands=['delete'])
-def del_command(message: str):
+def del_command(message: Message):
     user_data = parse_user_message_deleteexpense(message)
     user = get_user_from_message(m=message)
 
@@ -165,10 +167,9 @@ def del_command(message: str):
     send_to_src(message, f'Spend with {user_data} ID is deleted.')
 
 @bot.message_handler(commands=['total'])
-def total_command(message: str):
+def total_command(message: Message):
     user_data = parse_user_message_totalexpense(message)
     user = get_user_from_message(m=message)   
-    print(user_data)
 
     if not(user_data):
         send_to_src(message, 'Wrong /total command data format!')
@@ -177,6 +178,7 @@ def total_command(message: str):
     if user_data[0] == 'categoryMistake':
         send_to_src(message, f'Category {user_data[1]} not exists')
         return
+    
     # total all
     if not(user_data[0]) and not(user_data[1]):
         sum = ExpenseRepository.get_total_in_allcategories(

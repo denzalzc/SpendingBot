@@ -23,17 +23,18 @@ def validate_category(category: str) -> bool:
     return True if category in [c for c in VALID_CATEGORIES] else False
 
 def parse_user_message_addexpense(m: Message):
-    pattern = r'^/add\s+(\d+(?:\.\d+)?)\s+(\w+)(?:\s+(.+))?$'
+    pattern = r'^/add\s+(\d+(?:\.\d+)?)\s+(\S+)(?:\s+(.*))?$'
     shot = match(pattern=pattern, string=m.text)
 
     if shot:
         amount = shot.group(1)
         category = shot.group(2)
+        description = shot.group(3)
 
         if not(validate_category(category)):
             return 'categoryMistake'
 
-        return {'amount': amount, 'category': category}
+        return {'amount': amount, 'category': category, 'desc': description}
     else:
         return None
     

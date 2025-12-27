@@ -10,11 +10,14 @@ def get_category(category: ExpenseCategory):
 
 class ExpenseView:
      def __init__(self, expense: Expense):
-          self.id = expense.id
-          self. amount = expense.amount
-          self.category = get_category(expense.category)
-          self.description = expense.description
-          self.created_at = expense.created_at
+        self.id = expense.id
+        self. amount = expense.amount
+        self.category = get_category(expense.category)
+        self.description = expense.description
+        self.created_at = expense.created_at
+
+    
+    
 
 def testor(request):
     return render(request, 'test.html')
