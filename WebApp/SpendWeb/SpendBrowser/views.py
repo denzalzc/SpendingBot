@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from Bot.repository import UserRepository, Expense, ExpenseRepository, User, ExpenseCategory
+from Bot.repository import UserRepository, Expense, ExpenseRepository, User, ExpenseCategory, id_matcher
 from Bot.database import init_db
 from Bot.config import SessionLocal
 
@@ -9,8 +9,8 @@ def get_category(category: ExpenseCategory):
     return([c.value for c in ExpenseCategory if c == category])[0]
 
 class ExpenseView:
-     def __init__(self, expense: Expense):
-        self.id = expense.id
+     def __init__(self, expense: Expense, id_match: dict):
+        self.id = id_match[expense.id]
         self. amount = expense.amount
         self.category = get_category(expense.category)
         self.description = expense.description
@@ -36,8 +36,9 @@ def spends(request):
         user = UserRepository.get_user(db=db, telegram_id=tid)
 
         if str(user.telegram_id) == str(tid) and str(user.spend_password) == str(tpass):
+            id_match = id_matcher(db=db, telegram_id=user.telegram_id)
             spends = ExpenseRepository.get_expenses(db=db, telegram_id=user.telegram_id)
-            spends = [ExpenseView(expense) for expense in spends]   
+            spends = [ExpenseView(expense, id_match) for expense in spends]   
             return render(
                 request,
                 'spends.html',

@@ -248,6 +248,12 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('descAmount').textContent = amount;
         document.getElementById('descContent').textContent = description || 'Описание отсутствует';
 
+        console.log(description)    
+        if (description == null){ 
+            const block = element.closest('.card-description');
+            document.getElementById('descContent').textContent = block.querySelector('.description-full').textContent
+        }
+
         descriptionModal.style.display = 'flex';
     }
 

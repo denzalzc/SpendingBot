@@ -6,6 +6,30 @@ from datetime import datetime, timedelta, UTC, timezone
 from models import User, Expense, ExpenseCategory
 from contrib import now, bad
 
+
+def id_matcher(db: Session, telegram_id: int) -> dict:
+    user_expenses = ExpenseRepository.get_expenses(db=db, telegram_id=telegram_id, limit=9999999)
+    result = {}
+    current = len(user_expenses) + 1
+    number = 1
+
+    for i in user_expenses:
+        result[i.id] = current - number
+        number += 1
+    return result
+
+def reverse_id_matcher(db: Session, telegram_id: int) -> dict:
+    user_expenses = ExpenseRepository.get_expenses(db=db, telegram_id=telegram_id, limit=9999999)
+    result = {}
+    current = len(user_expenses) + 1
+    number = 1
+
+    for i in user_expenses:
+        result[current - number] = i.id
+        number += 1
+    return result
+
+
 class UserRepository:
 
     @staticmethod
@@ -104,7 +128,7 @@ class ExpenseRepository:
         db.commit()
         db.refresh(expense)
 
-        return Expense
+        return expense
 
     @staticmethod
     def get_expenses(db: Session, telegram_id: int, category: str = None, limit: int = 10) -> list:
@@ -227,5 +251,5 @@ class ExpenseRepository:
         except Exception as e:
             bad(f'Error on deleting expense(id={expense_id}, user_id={user.id})')
             db.rollback()
-            return False
+            return 0
         

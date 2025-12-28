@@ -1,4 +1,4 @@
-from repository import UserRepository, ExpenseRepository
+from repository import UserRepository, ExpenseRepository, id_matcher, reverse_id_matcher
 from models import ExpenseCategory
 from telebot.types import Message
 from config import SessionLocal, WEB_URL
@@ -82,7 +82,9 @@ def add_command(message: Message):
         category=user_data['category'],
         description=user_data['desc']
     )
-    send_to_src(message, f'Added. ID:{expense.id}')
+    id_match = id_matcher(db=db, telegram_id=user.telegram_id)
+    
+    send_to_src(message, f'Added. ID:{id_match[expense.id]}')
     
 
 @bot.message_handler(commands=['password'])
@@ -102,6 +104,8 @@ def show_command(message: Message):
     user_data = parse_user_message_showexpense(message)
     user = get_user_from_message(m=message)
 
+
+
     if not(user_data):
         send_to_src(message, 'Wrong /show command data format!')
         return
@@ -117,8 +121,9 @@ def show_command(message: Message):
             category=get_category(user_data['category']),
             limit=user_data['count']
         )
-        print(expenses)
-        output_text = f"{user_data['category']} spends:\n{'\n'.join([e.output() for e in expenses])}"
+        
+        id_match = id_matcher(db=db, telegram_id=user.telegram_id)
+        output_text = f"{user_data['category']} spends:\n{'\n'.join([e.output(id_match) for e in expenses])}"
         send_to_src(message, output_text)
         return
     # only cat
@@ -128,7 +133,8 @@ def show_command(message: Message):
             telegram_id=user.telegram_id,
             category=get_category(user_data['category'])
         )
-        output_text = f"{user_data['category']} spends:\n{'\n'.join([e.output() for e in expenses])}"
+        id_match = id_matcher(db=db, telegram_id=user.telegram_id)
+        output_text = f"{user_data['category']} spends:\n{'\n'.join([e.output(id_match) for e in expenses])}"
         send_to_src(message, output_text)
         return
     # only count   
@@ -138,7 +144,8 @@ def show_command(message: Message):
             telegram_id=user.telegram_id,
             limit=user_data['count']
         )
-        output_text = f"Spends:\n{'\n'.join([e.output_with_category() for e in expenses])}"
+        id_match = id_matcher(db=db, telegram_id=user.telegram_id)
+        output_text = f"Spends:\n{'\n'.join([e.output_with_category(id_match) for e in expenses])}"
         send_to_src(message, output_text)
         return
     # not cat not count
@@ -147,7 +154,8 @@ def show_command(message: Message):
             db=db,
             telegram_id=user.telegram_id,
         )
-        output_text = f"Spends:\n{'\n'.join([e.output_with_category() for e in expenses])}"
+        id_match = id_matcher(db=db, telegram_id=user.telegram_id)
+        output_text = f"Spends:\n{'\n'.join([e.output_with_category(id_match) for e in expenses])}"
         send_to_src(message, output_text)
         return
     
@@ -156,15 +164,20 @@ def del_command(message: Message):
     user_data = parse_user_message_deleteexpense(message)
     user = get_user_from_message(m=message)
 
+    id_match = reverse_id_matcher(db=db, telegram_id=user.telegram_id)
+
     if not(user_data):
         send_to_src(message, 'Wrong /delete command data format!')
-
-    ExpenseRepository.delete(
+        return
+    result = ExpenseRepository.delete(
         db=db,
         telegram_id=user.telegram_id,
-        expense_id=user_data
+        expense_id=id_match[user_data]
     )
-    send_to_src(message, f'Spend with {user_data} ID is deleted.')
+    if result:
+        send_to_src(message, f'Spend with {user_data} ID is deleted.')
+    else:
+        send_to_src(message, f'Spend with {user_data} ID not exists.')
 
 @bot.message_handler(commands=['total'])
 def total_command(message: Message):
@@ -215,7 +228,7 @@ def diag_command(message: Message):
 @bot.message_handler(commands=['budget'])
 def budget_command(message: Message):
     user = get_user_from_message(m=message)
-    send_to_src(message, f"Budged is - {user.total_budget} RUB")
+    send_to_src(message, f"Budged: {user.total_budget} RUB")
 
 
 @bot.message_handler(commands=['setbudget'])
@@ -232,13 +245,13 @@ def setbudget_command(message: Message):
         telegram_id=user.telegram_id,
         total_budget_amount=user_data
     )
-    send_to_src(message, 'Done.')
+    send_to_src(message, f'Done. Now budget: {user_data} RUB')
 
 @bot.message_handler(commands=['remain'])
 def remain_command(message: Message):
     user = get_user_from_message(m=message)
 
-    send_to_src(message, str(UserRepository.budget_remain(db=db, telegram_id=user.telegram_id)))
+    send_to_src(message, f"Remaining money: {str(UserRepository.budget_remain(db=db, telegram_id=user.telegram_id))}")
 
 
     

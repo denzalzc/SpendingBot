@@ -11,3 +11,5 @@ def init_db():
 def drop_db():
     Base.metadata.drop_all(bind=engine)
     good('DB is dropped!')
+
+# drop_db()

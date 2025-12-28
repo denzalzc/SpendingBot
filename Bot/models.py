@@ -73,10 +73,10 @@ class Expense(Base):
     def __repr__(self):
         return f"<Expense(id={self.id}, amount={self.amount}, category={self.category.value})>"
     
-    def output(self):
-         return f"[ID: {self.id}] {self.created_at.strftime("%d.%m.%y:%H:%M")}: {str(self.amount).replace('.0', '')} {self.currency}"
-    def output_with_category(self):
-         return f"[ID: {self.id}] {self.created_at.strftime("%d.%m.%y:%H:%M")}| {self.category.value or ""} | {str(self.amount).replace('.0', '')} {self.currency}"
+    def output(self, match_dict: dict):
+         return f"[ID: {match_dict[self.id]}] {self.created_at.strftime("%d.%m.%y:%H:%M")}: {str(self.amount).replace('.0', '')} {self.currency}"
+    def output_with_category(self, match_dict: dict):
+         return f"[ID: {match_dict[self.id]}] {self.created_at.strftime("%d.%m.%y:%H:%M")}| {self.category.value or ""} | {str(self.amount).replace('.0', '')} {self.currency}"
     
 
 

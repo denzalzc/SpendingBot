@@ -132,13 +132,16 @@
         <div class="cards-container" id="cardsContainer">
             {% for spend in spends %}
             <div class="expense-card" data-id="{{ spend.id }}" data-category="{{ spend.category }}">
-                <div class="card-header">
+                <div class="card-header">expense
                     <span class="category-badge category-{{ spend.category|slugify }}">
                         {{ spend.category }}
                     </span>
                     <span class="card-date">{{ spend.created_at|date:"d.m.Y H:i" }}</span>
                 </div>
                 <div class="card-body">
+                    <div class="description-full-hide" style="display: none;">
+                            {{ spend.description }}
+                        </div>
                     <div class="card-amount">{{ spend.amount }} ₽</div>
                     <div class="card-description">
                         {% if spend.description %}
