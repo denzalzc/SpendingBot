@@ -5,14 +5,18 @@ from config import SessionLocal, WEB_URL
 from contrib import parse_user_message_addexpense, parse_user_message_showexpense, parse_user_message_deleteexpense, parse_user_message_totalexpense, parse_user_message_updatebudget
 from database import init_db
 from graphic import create_diag
+from logger import Logger
+import os
 import telebot
 
 
 def get_category(category: str):
     return([c for c in ExpenseCategory if c.value == category])[0]
 
+
 init_db()
 db = SessionLocal()
+logger = Logger(os.path.abspath('.')+'/user_activity.log')
 
 def get_user_from_message(m: Message):
     up = m.from_user
@@ -61,6 +65,8 @@ def start_command(message: Message):
     send_to_src(message, f"Hi, {user.first_name}!\nUser /add for adding new spend\nSpend format is /add 99.99 category")
     send_to_src(message, f"Avaiable categories:\n{'\n'.join([c.value for c in ExpenseCategory])}")
 
+    logger.log('Start', user.telegram_id, user.id)
+
 @bot.message_handler(commands=['add'])
 def add_command(message: Message):
     
@@ -69,9 +75,11 @@ def add_command(message: Message):
 
     if not(user_data):
         send_to_src(message, 'Wrong /add command data format!')
+        logger.log('Add', user.telegram_id, user.id, 'Write wrong format')
         return
     if user_data == 'categoryMistake':
         send_to_src(message, f'Category {user_data['category']} not exists')
+        logger.log('Add', user.telegram_id, user.id, 'Write wrong category')
         return
 
 
@@ -85,6 +93,7 @@ def add_command(message: Message):
     id_match = id_matcher(db=db, telegram_id=user.telegram_id)
     
     send_to_src(message, f'Added. ID:{id_match[expense.id]}')
+    logger.log('Add', user.telegram_id, user.id, f'Add Expense, id: {expense.id}')
     
 
 @bot.message_handler(commands=['password'])
@@ -92,25 +101,29 @@ def getps_command(message: Message):
     user = get_user_from_message(m=message)
 
     send_to_src(message, f"Your spend-password: {user.spend_password}")
+    logger.log('Password', user.telegram_id, user.id, f'Got Password for web')
 
 @bot.message_handler(commands=['id'])
 def getid_command(message: Message):
     user = get_user_from_message(m=message)
 
     send_to_src(message, f"Your telegram-id: {user.telegram_id}")
+    logger.log('ID', user.telegram_id, user.id, f'Got ID for web')
         
 @bot.message_handler(commands=['show'])
 def show_command(message: Message):
     user_data = parse_user_message_showexpense(message)
     user = get_user_from_message(m=message)
-
+    
 
 
     if not(user_data):
         send_to_src(message, 'Wrong /show command data format!')
+        logger.log('Show', user.telegram_id, user.id, f'Write wrong show format')
         return
     if user_data == 'categoryMistake':
         send_to_src(message, f'Category {user_data['category']} not exists')
+        logger.log('Show', user.telegram_id, user.id, f'Write wrong category')
         return
     
     # cat and count
@@ -125,6 +138,7 @@ def show_command(message: Message):
         id_match = id_matcher(db=db, telegram_id=user.telegram_id)
         output_text = f"{user_data['category']} spends:\n{'\n'.join([e.output(id_match) for e in expenses])}"
         send_to_src(message, output_text)
+        logger.log('Show', user.telegram_id, user.id, f'Got expenses by category and limit')
         return
     # only cat
     if user_data['category'] and not(user_data['count']):
@@ -136,6 +150,7 @@ def show_command(message: Message):
         id_match = id_matcher(db=db, telegram_id=user.telegram_id)
         output_text = f"{user_data['category']} spends:\n{'\n'.join([e.output(id_match) for e in expenses])}"
         send_to_src(message, output_text)
+        logger.log('Show', user.telegram_id, user.id, f'Got expenses by only category')
         return
     # only count   
     if not(user_data['category']) and user_data['count']:
@@ -147,6 +162,7 @@ def show_command(message: Message):
         id_match = id_matcher(db=db, telegram_id=user.telegram_id)
         output_text = f"Spends:\n{'\n'.join([e.output_with_category(id_match) for e in expenses])}"
         send_to_src(message, output_text)
+        logger.log('Show', user.telegram_id, user.id, f'Got expenses by only limit')
         return
     # not cat not count
     if not(user_data['category']) and not(user_data['count']):
@@ -157,6 +173,7 @@ def show_command(message: Message):
         id_match = id_matcher(db=db, telegram_id=user.telegram_id)
         output_text = f"Spends:\n{'\n'.join([e.output_with_category(id_match) for e in expenses])}"
         send_to_src(message, output_text)
+        logger.log('Show', user.telegram_id, user.id, f'Got expenses')
         return
     
 @bot.message_handler(commands=['delete'])
@@ -168,6 +185,7 @@ def del_command(message: Message):
 
     if not(user_data):
         send_to_src(message, 'Wrong /delete command data format!')
+        logger.log('Delete', user.telegram_id, user.id, f'Write wrong delete format')
         return
     result = ExpenseRepository.delete(
         db=db,
@@ -176,8 +194,10 @@ def del_command(message: Message):
     )
     if result:
         send_to_src(message, f'Spend with {user_data} ID is deleted.')
+        logger.log('Delete', user.telegram_id, user.id, f'Deleted expense with ID: {user_data} (user view ID: {id_match[user_data]})')
     else:
         send_to_src(message, f'Spend with {user_data} ID not exists.')
+        logger.log('Delete', user.telegram_id, user.id, f'Write ID that not exists')
 
 @bot.message_handler(commands=['total'])
 def total_command(message: Message):
@@ -186,10 +206,12 @@ def total_command(message: Message):
 
     if not(user_data):
         send_to_src(message, 'Wrong /total command data format!')
+        logger.log('Total', user.telegram_id, user.id, f'Write wrong total format')
         return
 
     if user_data[0] == 'categoryMistake':
         send_to_src(message, f'Category {user_data[1]} not exists')
+        logger.log('Total', user.telegram_id, user.id, f'Write wrong category')
         return
     
     # total all
@@ -199,6 +221,7 @@ def total_command(message: Message):
             telegram_id=user.telegram_id,
         )
         send_to_src(message, f"Total is {str(sum).replace('.0', '')}")
+        logger.log('Total', user.telegram_id, user.id, f'Got total of all expenses')
         return
     # total in category
     if user_data[0]:
@@ -209,6 +232,7 @@ def total_command(message: Message):
             category=category
         )
         send_to_src(message, f"Total {user_data[0]} is {str(sum).replace('.0', '')}")
+        logger.log('Total', user.telegram_id, user.id, f'Got total in category: {category}')
 
 @bot.message_handler(commands=['diag'])
 def diag_command(message: Message):
@@ -224,11 +248,13 @@ def diag_command(message: Message):
     diag = create_diag(categories=categories, sum_of_category=values)
 
     bot.send_photo(message.chat.id, diag)
+    logger.log('Diag', user.telegram_id, user.id, f'Got Diag image')
 
 @bot.message_handler(commands=['budget'])
 def budget_command(message: Message):
     user = get_user_from_message(m=message)
     send_to_src(message, f"Budged: {user.total_budget} RUB")
+    logger.log('Budget', user.telegram_id, user.id, f'Got budget')
 
 
 @bot.message_handler(commands=['setbudget'])
@@ -238,6 +264,7 @@ def setbudget_command(message: Message):
 
     if not(user_data):
         send_to_src(message, 'Wrong /setbudget command format!')
+        logger.log('SetBudget', user.telegram_id, user.id, f'Write wrong setbudget format')
         return
     
     UserRepository.set_total_budget(
@@ -246,12 +273,14 @@ def setbudget_command(message: Message):
         total_budget_amount=user_data
     )
     send_to_src(message, f'Done. Now budget: {user_data} RUB')
+    logger.log('SetBudget', user.telegram_id, user.id, f'Set new budget amount: {user_data}')
 
 @bot.message_handler(commands=['remain'])
 def remain_command(message: Message):
     user = get_user_from_message(m=message)
 
     send_to_src(message, f"Remaining money: {str(UserRepository.budget_remain(db=db, telegram_id=user.telegram_id))}")
+    logger.log('Remain', user.telegram_id, user.id, f'Got remains')
 
 
     
