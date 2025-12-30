@@ -1,5 +1,1 @@
-1. fix Empty description in mobile mode
-2. fix returning Expense class replacing 'expense' obj at add_command
-3. add text for all commands (now no silince)
-4. fix Delete command
-5. make unique ID representation for any users without changing models
+1. add logger
