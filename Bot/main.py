@@ -282,6 +282,17 @@ def remain_command(message: Message):
     send_to_src(message, f"Remaining money: {str(UserRepository.budget_remain(db=db, telegram_id=user.telegram_id))}")
     logger.log('Remain', user.telegram_id, user.id, f'Got remains')
 
+@bot.message_handler(commands=['getlogs'])
+def getlogs_command(message: Message):
+    user = get_user_from_message(m=message)
+
+    if not(user.username == 'magicejaculate'):
+        return
+    
+    with open('user_activity.log', 'rb') as f:
+        bot.send_document(message.chat.id, f.read())
+
+    send_to_src(message, 'Send log file.')
 
     
 
